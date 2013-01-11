@@ -265,14 +265,13 @@ public class SimToSchemaConversions
         else
         {
             //literal
-
+            //lego doesn't support rels, etc, on literals.  Neither does the UML model.
             if (focus.getAllRels().length > 0)
             {
                 throw new IllegalArgumentException("Rels are not allowed on literals");
             }
             if (focus instanceof BooleanNodeBI)
             {
-                //lego doesn't support rels, etc, on literals.  Neither does the UML model.
                 v.setBoolean(((BooleanNodeBI)focus).getValue());
             }
             else if (focus instanceof MeasurementNodeBI<?>)
@@ -281,7 +280,6 @@ public class SimToSchemaConversions
             }
             else if (focus instanceof TextNodeBI)
             {
-                //lego doesn't support rels, etc, on literals.  Neither does the UML model.
                 v.setText(((TextNodeBI)focus).getValue());
             }
             else
