@@ -5,7 +5,6 @@ import gov.va.legoEdit.model.sim.act.Assertion;
 import gov.va.legoEdit.storage.CloseableIterator;
 import gov.va.legoEdit.storage.IteratorClosedException;
 import gov.va.sim.act.AssertionBI;
-import gov.va.sim.act.expression.ExpressionBI;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,13 +17,13 @@ import org.slf4j.LoggerFactory;
  * and returns kicks out Assertions, as defined by the SIM-API.
  * @author darmbrust
  */
-public class LegoToSimAssertionConvertingIterator implements CloseableIterator<AssertionBI>
+public class SchemaToSimAssertionConvertingIterator implements CloseableIterator<AssertionBI>
 {
-    private Logger logger = LoggerFactory.getLogger(LegoToSimAssertionConvertingIterator.class);
+    private Logger logger = LoggerFactory.getLogger(SchemaToSimAssertionConvertingIterator.class);
     private CloseableIterator<Lego> legos_;
     private ArrayList<Assertion> assertionBuffer_ = new ArrayList<Assertion>();
     
-    public LegoToSimAssertionConvertingIterator(CloseableIterator<Lego> legos)
+    public SchemaToSimAssertionConvertingIterator(CloseableIterator<Lego> legos)
     {
         this.legos_ = legos;
     }
@@ -86,12 +85,7 @@ public class LegoToSimAssertionConvertingIterator implements CloseableIterator<A
     {
         for (gov.va.legoEdit.model.schemaModel.Assertion schemaAssertion : l.getAssertion())
         {
-            ExpressionBI discernible = SchemaToSimConversions.convertExpressionToExpression(schemaAssertion.getDiscernible().getExpression());
-            ExpressionBI qualifier = SchemaToSimConversions.convertExpressionToExpression(schemaAssertion.getQualifier().getExpression());
-            ExpressionBI value = SchemaToSimConversions.convertValueToExpression(schemaAssertion.getValue());
-            long[] timing = SchemaToSimConversions.convertTiming(schemaAssertion.getTiming());
-            Assertion simAssertion = new Assertion(discernible, qualifier, value, timing);
-            assertionBuffer_.add(simAssertion);
+            assertionBuffer_.add(SchemaToSimConversions.convert(schemaAssertion));
         }
     }
 }

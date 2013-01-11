@@ -2,7 +2,7 @@ package gov.va.legoEdit.storage.sim;
 
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
 import gov.va.legoEdit.storage.CloseableIterator;
-import gov.va.legoEdit.storage.sim.util.LegoToSimAssertionConvertingIterator;
+import gov.va.legoEdit.storage.sim.util.SchemaToSimAssertionConvertingIterator;
 import gov.va.sim.act.AssertionBI;
 
 /**
@@ -15,7 +15,7 @@ public class SimDataStoreImpl implements SimDataStoreInterface
     @Override
     public CloseableIterator<AssertionBI> getAssertions()
     {
-        return new LegoToSimAssertionConvertingIterator(BDBDataStoreImpl.getInstance().getLegos());
+        return new SchemaToSimAssertionConvertingIterator(BDBDataStoreImpl.getInstance().getLegos());
     }
 
 }

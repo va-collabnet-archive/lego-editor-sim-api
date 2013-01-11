@@ -1,5 +1,6 @@
 package gov.va.legoEdit.storage.sim.util;
 
+import gov.va.legoEdit.model.sim.act.Assertion;
 import gov.va.legoEdit.model.sim.act.expression.Expression;
 import gov.va.legoEdit.model.sim.act.expression.ExpressionRel;
 import gov.va.legoEdit.model.sim.act.expression.ExpressionRelGroup;
@@ -37,15 +38,27 @@ public class SchemaToSimConversions
 {
     private static Logger logger = LoggerFactory.getLogger(SchemaToSimConversions.class);
     
-    public static long[] convertTiming(gov.va.legoEdit.model.schemaModel.Timing schemaTiming)
+    public static Assertion convert(gov.va.legoEdit.model.schemaModel.Assertion schemaAssertion) throws PropertyVetoException, IOException
     {
-        if (schemaTiming == null)
+        ExpressionBI discernible = convert(schemaAssertion.getDiscernible().getExpression());
+        ExpressionBI qualifier = convert(schemaAssertion.getQualifier().getExpression());
+        ExpressionBI value = convertToExpression(schemaAssertion.getValue());
+        long[] timing = convertToLong(schemaAssertion.getTiming());
+        Assertion simAssertion = new Assertion(discernible, qualifier, value, timing);
+        //TODO there is no place to store the assertionUUID.  Think there should be.
+        //TODO there is no place to store the assertionComponents.
+        return simAssertion;
+    }
+    
+    public static long[] convertToLong(gov.va.legoEdit.model.schemaModel.Measurement schemaMeasurement)
+    {
+        if (schemaMeasurement == null)
         {
             return new long[] {};
         }
-        gov.va.legoEdit.model.schemaModel.Point p = schemaTiming.getMeasurement().getPoint();
-        gov.va.legoEdit.model.schemaModel.Interval i = schemaTiming.getMeasurement().getInterval();
-        gov.va.legoEdit.model.schemaModel.Bound b = schemaTiming.getMeasurement().getBound();
+        gov.va.legoEdit.model.schemaModel.Point p = schemaMeasurement.getPoint();
+        gov.va.legoEdit.model.schemaModel.Interval i = schemaMeasurement.getInterval();
+        gov.va.legoEdit.model.schemaModel.Bound b = schemaMeasurement.getBound();
         //Units aren't supported by sim-api for the timing field
         //TODO - I really think Keith is going to have to fix this.... if not, figure out how to do conversions
 
@@ -104,24 +117,24 @@ public class SchemaToSimConversions
         }
     }
     
-    public static ExpressionBI convertExpressionToExpression(gov.va.legoEdit.model.schemaModel.Expression schemaExpression) throws PropertyVetoException, IOException
+    public static ExpressionBI convert(gov.va.legoEdit.model.schemaModel.Expression schemaExpression) throws PropertyVetoException, IOException
     {
-        return new Expression(convertExpressionToNode(schemaExpression));
+        return new Expression(convertToNode(schemaExpression));
     }
     
-    public static ExpressionNodeBI<?> convertExpressionToNode(gov.va.legoEdit.model.schemaModel.Expression schemaExpression) throws PropertyVetoException, IOException
+    public static ExpressionNodeBI<?> convertToNode(gov.va.legoEdit.model.schemaModel.Expression schemaExpression) throws PropertyVetoException, IOException
     {
         ExpressionNodeBI<?> node;
         if (schemaExpression.getConcept() != null)
         {
-            node = new ConceptNode(getWBConcept(schemaExpression.getConcept()));
+            node = new ConceptNode(convert(schemaExpression.getConcept()));
         }
         else if (schemaExpression.getExpression().size() > 0)
         {
             ArrayList<ExpressionNodeBI<?>> nodes = new ArrayList<ExpressionNodeBI<?>>(schemaExpression.getExpression().size());
             for (gov.va.legoEdit.model.schemaModel.Expression nestedSchemaExpression : schemaExpression.getExpression())
             {
-                nodes.add(convertExpressionToNode(nestedSchemaExpression));
+                nodes.add(convertToNode(nestedSchemaExpression));
             }
             node = new ConjunctionNode(nodes);
         }
@@ -132,7 +145,7 @@ public class SchemaToSimConversions
         
         for (gov.va.legoEdit.model.schemaModel.Relation schemaRel : schemaExpression.getRelation())
         {
-            node.addRel(getWBConcept(schemaRel.getType().getConcept()), convertDestinationToNode(schemaRel.getDestination()));
+            node.addRel(convert(schemaRel.getType().getConcept()), convertToNode(schemaRel.getDestination()));
         }
         
         for (gov.va.legoEdit.model.schemaModel.RelationGroup schemaRelGroup : schemaExpression.getRelationGroup()) 
@@ -140,7 +153,7 @@ public class SchemaToSimConversions
             ArrayList<ExpressionRelBI> relGroupMembers = new ArrayList<>();
             for (gov.va.legoEdit.model.schemaModel.Relation schemaRel : schemaRelGroup.getRelation())
             {
-                ExpressionRelBI createdRel = node.addRel(getWBConcept(schemaRel.getType().getConcept()), convertDestinationToNode(schemaRel.getDestination()));
+                ExpressionRelBI createdRel = node.addRel(convert(schemaRel.getType().getConcept()), convertToNode(schemaRel.getDestination()));
                 relGroupMembers.add(createdRel);
             }
             ExpressionRelGroup relGroup = new ExpressionRelGroup(relGroupMembers.toArray(new ExpressionRel[relGroupMembers.size()]));
@@ -153,15 +166,15 @@ public class SchemaToSimConversions
         return node;
     }
     
-    public static ExpressionNodeBI<?> convertDestinationToNode(gov.va.legoEdit.model.schemaModel.Destination schemaDestination) throws PropertyVetoException, IOException
+    public static ExpressionNodeBI<?> convertToNode(gov.va.legoEdit.model.schemaModel.Destination schemaDestination) throws PropertyVetoException, IOException
     {
         if (schemaDestination.getExpression() != null)
         {
-            return convertExpressionToNode(schemaDestination.getExpression());
+            return convertToNode(schemaDestination.getExpression());
         }
         else if (schemaDestination.getMeasurement() != null)
         {
-            return convertMeasurement(schemaDestination.getMeasurement());
+            return convert(schemaDestination.getMeasurement());
         }
         else if (schemaDestination.getText() != null)
         {
@@ -177,7 +190,7 @@ public class SchemaToSimConversions
         }
     }
     
-    public static ConceptVersionBI getWBConcept(gov.va.legoEdit.model.schemaModel.Concept schemaConcept) throws IOException
+    public static ConceptVersionBI convert(gov.va.legoEdit.model.schemaModel.Concept schemaConcept) throws IOException
     {
         ConceptVersionBI result = WBUtility.lookupSnomedIdentifierAsCV((Utility.isEmpty(schemaConcept.getUuid()) ? schemaConcept.getSctid() + "" : schemaConcept.getUuid()));
         if (result == null)
@@ -188,15 +201,15 @@ public class SchemaToSimConversions
         return result;
     }
     
-    public static ExpressionBI convertValueToExpression(gov.va.legoEdit.model.schemaModel.Value schemaValue) throws PropertyVetoException, IOException
+    public static ExpressionBI convertToExpression(gov.va.legoEdit.model.schemaModel.Value schemaValue) throws PropertyVetoException, IOException
     {
         if (schemaValue.getExpression() != null)
         {
-            return convertExpressionToExpression(schemaValue.getExpression());
+            return convert(schemaValue.getExpression());
         }
         else if (schemaValue.getMeasurement() != null)
         {
-            return new Expression(convertMeasurement(schemaValue.getMeasurement()));
+            return new Expression(convert(schemaValue.getMeasurement()));
         }
         else if (schemaValue.getText() != null)
         {
@@ -212,19 +225,19 @@ public class SchemaToSimConversions
         }
     }
     
-    public static ExpressionNode<?> convertMeasurement(gov.va.legoEdit.model.schemaModel.Measurement schemaMeasurement)
+    public static ExpressionNode<?> convert(gov.va.legoEdit.model.schemaModel.Measurement schemaMeasurement)
     {
         if (schemaMeasurement.getPoint() != null)
         {
-            return new PointNode(convertPoint(schemaMeasurement.getPoint()));
+            return new PointNode(convert(schemaMeasurement.getPoint()));
         }
         else if (schemaMeasurement.getBound() != null)
         {
-            return new BoundedNode(convertBound(schemaMeasurement.getBound()));
+            return new BoundedNode(convert(schemaMeasurement.getBound()));
         }
         else if (schemaMeasurement.getInterval() != null)
         {
-            return new IntervalNode(convertInterval(schemaMeasurement.getInterval()));
+            return new IntervalNode(convert(schemaMeasurement.getInterval()));
         }
         else
         {
@@ -232,7 +245,7 @@ public class SchemaToSimConversions
         }
     }
     
-    public static Point convertPoint(gov.va.legoEdit.model.schemaModel.Point schemaPoint)
+    public static Point convert(gov.va.legoEdit.model.schemaModel.Point schemaPoint)
     {
         if (schemaPoint.getNumericValue() != null)
         {
@@ -249,14 +262,14 @@ public class SchemaToSimConversions
         }
     }
     
-    public static BoundBI convertBound(gov.va.legoEdit.model.schemaModel.Bound bound)
+    public static BoundBI convert(gov.va.legoEdit.model.schemaModel.Bound bound)
     {
-        return new Bound(convertPoint(bound.getUpperPoint()), bound.isUpperPointInclusive(), 
-                convertPoint(bound.getLowerPoint()), bound.isLowerPointInclusive());
+        return new Bound(convert(bound.getUpperPoint()), bound.isUpperPointInclusive(), 
+                convert(bound.getLowerPoint()), bound.isLowerPointInclusive());
     }
     
-    public static IntervalBI convertInterval(gov.va.legoEdit.model.schemaModel.Interval interval)
+    public static IntervalBI convert(gov.va.legoEdit.model.schemaModel.Interval interval)
     {
-        return new Interval(convertBound(interval.getUpperBound()), convertBound(interval.getLowerBound()));
+        return new Interval(convert(interval.getUpperBound()), convert(interval.getLowerBound()));
     }
 }
