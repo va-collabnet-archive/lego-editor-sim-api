@@ -47,13 +47,13 @@ import org.ihtsdo.tk.api.concept.ConceptVersionBI;
 
 public class SimToSchemaConversions
 {
-    public static TreeMap<Float, MeasurementConstant> measurementConstantValues_= new TreeMap<>();
+    public static TreeMap<Long, MeasurementConstant> measurementConstantValues_= new TreeMap<>();
     static
     {
         //TODO this is a hack that needs addressing
         for (MeasurementConstant mc : MeasurementConstant.values())
         {
-            measurementConstantValues_.put((Float.MIN_VALUE + (long)mc.ordinal()), mc);
+            measurementConstantValues_.put((Long.MIN_VALUE + (long)mc.ordinal()), mc);
         }
     }
     
@@ -112,9 +112,9 @@ public class SimToSchemaConversions
     public static Point makePoint(Number number)
     {
         Point p = new Point();
-        if (number.floatValue() <= measurementConstantValues_.lastKey() && number.floatValue() >= measurementConstantValues_.firstKey())
+        if (number.longValue() <= measurementConstantValues_.lastKey() && number.longValue() >= measurementConstantValues_.firstKey())
         {
-            p.setStringConstant(measurementConstantValues_.get(number.floatValue()));
+            p.setStringConstant(measurementConstantValues_.get(number.longValue()));
             if (p.getStringConstant() == null)
             {
                 throw new IllegalArgumentException("Unknown measurement constant");

@@ -109,7 +109,7 @@ public class SchemaToSimConversions
         else if (p.getStringConstant() != null)
         {
             //TODO constants
-            return new Long(Long.MIN_VALUE - p.getStringConstant().ordinal());
+            return new Long(Long.MIN_VALUE - (long)p.getStringConstant().ordinal());
         }
         else
         {
@@ -259,7 +259,7 @@ public class SchemaToSimConversions
         else if (schemaPoint.getStringConstant() != null)
         {
             //TODO deal with constants
-            return new Point(Float.MIN_VALUE + (float)schemaPoint.getStringConstant().ordinal(), cv);
+            return new Point(Long.MIN_VALUE + (long)schemaPoint.getStringConstant().ordinal(), cv);
         }
         else
         {
