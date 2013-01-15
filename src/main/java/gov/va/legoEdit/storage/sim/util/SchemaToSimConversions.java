@@ -26,6 +26,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 import org.ihtsdo.tk.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,7 @@ public class SchemaToSimConversions
         ExpressionBI qualifier = convert(schemaAssertion.getQualifier().getExpression());
         ExpressionBI value = convertToExpression(schemaAssertion.getValue());
         long[] timing = convertToLong(schemaAssertion.getTiming());
-        Assertion simAssertion = new Assertion(discernible, qualifier, value, timing);
-        //TODO there is no place to store the assertionUUID.  Think there should be.
+        Assertion simAssertion = new Assertion(UUID.fromString(schemaAssertion.getAssertionUUID()), discernible, qualifier, value, timing);
         //TODO there is no place to store the assertionComponents.
         return simAssertion;
     }
@@ -225,19 +225,19 @@ public class SchemaToSimConversions
         }
     }
     
-    public static ExpressionNode<?> convert(gov.va.legoEdit.model.schemaModel.Measurement schemaMeasurement)
+    public static ExpressionNode<?> convert(gov.va.legoEdit.model.schemaModel.Measurement schemaMeasurement) throws IOException
     {
         if (schemaMeasurement.getPoint() != null)
         {
-            return new PointNode(convert(schemaMeasurement.getPoint()));
+            return new PointNode(convert(schemaMeasurement.getPoint(), (schemaMeasurement.getUnits() == null ? null : schemaMeasurement.getUnits().getConcept())));
         }
         else if (schemaMeasurement.getBound() != null)
         {
-            return new BoundedNode(convert(schemaMeasurement.getBound()));
+            return new BoundedNode(convert(schemaMeasurement.getBound(), (schemaMeasurement.getUnits() == null ? null : schemaMeasurement.getUnits().getConcept())));
         }
         else if (schemaMeasurement.getInterval() != null)
         {
-            return new IntervalNode(convert(schemaMeasurement.getInterval()));
+            return new IntervalNode(convert(schemaMeasurement.getInterval(), (schemaMeasurement.getUnits() == null ? null : schemaMeasurement.getUnits().getConcept())));
         }
         else
         {
@@ -245,16 +245,21 @@ public class SchemaToSimConversions
         }
     }
     
-    public static Point convert(gov.va.legoEdit.model.schemaModel.Point schemaPoint)
+    public static Point convert(gov.va.legoEdit.model.schemaModel.Point schemaPoint, gov.va.legoEdit.model.schemaModel.Concept schemaUnits) throws IOException
     {
+        ConceptVersionBI cv = null;
+        if (schemaUnits != null)
+        {
+            cv = convert(schemaUnits);
+        }
         if (schemaPoint.getNumericValue() != null)
         {
-            return new Point(schemaPoint.getNumericValue());
+            return new Point(schemaPoint.getNumericValue(), cv);
         }
         else if (schemaPoint.getStringConstant() != null)
         {
             //TODO deal with constants
-            return new Point(Float.MIN_VALUE + (float)schemaPoint.getStringConstant().ordinal());
+            return new Point(Float.MIN_VALUE + (float)schemaPoint.getStringConstant().ordinal(), cv);
         }
         else
         {
@@ -262,14 +267,14 @@ public class SchemaToSimConversions
         }
     }
     
-    public static BoundBI convert(gov.va.legoEdit.model.schemaModel.Bound bound)
+    public static BoundBI convert(gov.va.legoEdit.model.schemaModel.Bound bound, gov.va.legoEdit.model.schemaModel.Concept schemaUnits) throws IOException
     {
-        return new Bound(convert(bound.getUpperPoint()), bound.isUpperPointInclusive(), 
-                convert(bound.getLowerPoint()), bound.isLowerPointInclusive());
+        return new Bound(convert(bound.getUpperPoint(), schemaUnits), bound.isUpperPointInclusive(), 
+                convert(bound.getLowerPoint(), schemaUnits), bound.isLowerPointInclusive());
     }
     
-    public static IntervalBI convert(gov.va.legoEdit.model.schemaModel.Interval interval)
+    public static IntervalBI convert(gov.va.legoEdit.model.schemaModel.Interval interval, gov.va.legoEdit.model.schemaModel.Concept schemaUnits) throws IOException
     {
-        return new Interval(convert(interval.getUpperBound()), convert(interval.getLowerBound()));
+        return new Interval(convert(interval.getUpperBound(), schemaUnits), convert(interval.getLowerBound(), schemaUnits));
     }
 }

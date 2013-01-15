@@ -4,6 +4,7 @@ import gov.va.sim.act.AssertionBI;
 import gov.va.sim.act.expression.ExpressionBI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Lego Implementation of the SIM-API
@@ -14,13 +15,14 @@ public class Assertion extends Act implements AssertionBI
     ExpressionBI discernable_, qualifier_, value_;
     long[] timing_;
     
-    public Assertion(ExpressionBI discernable, ExpressionBI qualifier, ExpressionBI value)
+    public Assertion(UUID assertionUUID, ExpressionBI discernable, ExpressionBI qualifier, ExpressionBI value)
     {
-        this(discernable, qualifier, value, new long[] {});
+        this(assertionUUID, discernable, qualifier, value, new long[] {});
     }
     
-    public Assertion(ExpressionBI discernable, ExpressionBI qualifier, ExpressionBI value, long[] timing)
+    public Assertion(UUID assertionUUID, ExpressionBI discernable, ExpressionBI qualifier, ExpressionBI value, long[] timing)
     {
+        this.instanceUUID_ = assertionUUID;
         this.discernable_ = discernable;
         this.qualifier_ = qualifier;
         this.value_ = value;

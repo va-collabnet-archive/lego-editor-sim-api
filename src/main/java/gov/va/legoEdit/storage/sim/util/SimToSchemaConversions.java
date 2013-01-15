@@ -3,6 +3,7 @@ package gov.va.legoEdit.storage.sim.util;
 import gov.va.legoEdit.model.SchemaEquals;
 import gov.va.legoEdit.model.schemaModel.Assertion;
 import gov.va.legoEdit.model.schemaModel.Bound;
+import gov.va.legoEdit.model.schemaModel.Concept;
 import gov.va.legoEdit.model.schemaModel.Destination;
 import gov.va.legoEdit.model.schemaModel.Discernible;
 import gov.va.legoEdit.model.schemaModel.Expression;
@@ -64,6 +65,7 @@ public class SimToSchemaConversions
         assertion.setQualifier(convertToQualifier(simAssertion.getQualifier()));
         assertion.setValue(convertToValue(simAssertion.getValue()));
         assertion.setTiming(convert(simAssertion.getTiming()));
+        assertion.setAssertionUUID(simAssertion.getInstanceUuid().toString());
         return assertion;
     }
     
@@ -357,9 +359,15 @@ public class SimToSchemaConversions
     
     public static Units convertToUnits(ConceptVersionBI concept)
     {
-        Units u = new Units();
-        u.setConcept(WBUtility.convertConcept(concept));
-        return u;
+        Concept c = WBUtility.convertConcept(concept);
+        Units units = null;
+        if (c != null)
+        {
+            units = new Units();
+            units.setConcept(c);
+        }
+        
+        return units;
     }
     
     public static Type convertToType(ConceptVersionBI concept)

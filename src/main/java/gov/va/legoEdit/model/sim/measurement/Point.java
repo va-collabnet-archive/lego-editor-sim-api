@@ -21,6 +21,13 @@ public class Point extends Measurement<PointBI> implements  PointBI
         value_ = this;
     }
     
+    public Point(Number pointValue, ConceptVersionBI units)
+    {
+        this.units_ = units;
+        this.pointValue_ = pointValue;
+        value_ = this;
+    }
+    
     @Override
     public Number getPointValue()
     {

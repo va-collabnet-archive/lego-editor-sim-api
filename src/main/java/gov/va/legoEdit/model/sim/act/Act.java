@@ -11,10 +11,12 @@ import gov.va.sim.act.expression.ExpressionBI;
  */
 public class Act implements ActBI
 {
+    protected UUID instanceUUID_;
     
     @Override
     public boolean equivalent(ActBI another)
     {
+        //TODO probably need this
         throw new UnsupportedOperationException();
     }
 
@@ -51,12 +53,13 @@ public class Act implements ActBI
     @Override
     public UUID getInstanceUuid()
     {
-        throw new UnsupportedOperationException();
+        return instanceUUID_;
     }
 
     @Override
     public Collection<UUID> getChildrenUuids()
     {
+        //TODO probably need this
         throw new UnsupportedOperationException();
     }
 

@@ -61,6 +61,7 @@ public abstract class ExpressionNode<T> extends ExpressionComponent implements E
     @Override
     public void appendStringForUuidHash(StringBuilder sb) throws IOException
     {
+        //TODO probably need this
         throw new UnsupportedOperationException();
     }
 
