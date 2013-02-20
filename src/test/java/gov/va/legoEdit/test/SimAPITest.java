@@ -26,92 +26,85 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
+ * 
  * @author darmbrust
  */
 public class SimAPITest
 {
-    @BeforeClass
-    public static void oneTimeSetUp() throws Exception
-    {
-        BDBDataStoreImpl.dbFolderPath = new File("testDB");
-        FileUtils.deleteDirectory(BDBDataStoreImpl.dbFolderPath);
-        WBDataStore.bdbFolderPath = new File("../lego-editor/wb-berkeley-db");
-    }
+	@BeforeClass
+	public static void oneTimeSetUp() throws Exception
+	{
+		BDBDataStoreImpl.dbFolderPath = new File("testDB");
+		FileUtils.deleteDirectory(BDBDataStoreImpl.dbFolderPath);
+		WBDataStore.bdbFolderPath = new File("../lego-editor/wb-berkeley-db");
+	}
 
-    @AfterClass
-    public static void oneTimeTearDown() throws Exception
-    {
-        BDBDataStoreImpl.getInstance().shutdown();
-    }
+	@AfterClass
+	public static void oneTimeTearDown() throws Exception
+	{
+		BDBDataStoreImpl.getInstance().shutdown();
+	}
 
-    @Before
-    public void setUp() throws Exception
-    {
-        clearDB();
-        assertFalse("Datastore isn't empty!", BDBDataStoreImpl.getInstance().getLegoLists().hasNext());
-    }
+	@Before
+	public void setUp() throws Exception
+	{
+		clearDB();
+		assertFalse("Datastore isn't empty!", BDBDataStoreImpl.getInstance().getLegoLists().hasNext());
+	}
 
-    @After
-    public void tearDown() throws Exception
-    {
-        clearDB();
-    }
+	@After
+	public void tearDown() throws Exception
+	{
+		clearDB();
+	}
 
-    private void clearDB() throws WriteException
-    {
-        CloseableIterator<LegoList> iterator = BDBDataStoreImpl.getInstance().getLegoLists();
-        ArrayList<String> toDelete = new ArrayList<>();
-        while (iterator.hasNext())
-        {
-            LegoList ll = iterator.next();
-            toDelete.add(ll.getLegoListUUID());
-        }
-        for (String s : toDelete)
-        {
-            BDBDataStoreImpl.getInstance().deleteLegoList(s);
-        }
-    }
+	private void clearDB() throws WriteException
+	{
+		CloseableIterator<LegoList> iterator = BDBDataStoreImpl.getInstance().getLegoLists();
+		ArrayList<String> toDelete = new ArrayList<>();
+		while (iterator.hasNext())
+		{
+			LegoList ll = iterator.next();
+			toDelete.add(ll.getLegoListUUID());
+		}
+		for (String s : toDelete)
+		{
+			BDBDataStoreImpl.getInstance().deleteLegoList(s);
+		}
+	}
 
-    @Test
-    public void testSimRoundtrip() throws WriteException, JAXBException, IOException, PropertyVetoException
-    {
-        LegoList initial = LegoXMLUtils.readLegoList(new File(SimAPITest.class.getResource("badDay.xml").getFile()));
-        BDBDataStoreImpl.getInstance().importLegoList(initial);
+	@Test
+	public void testSimRoundtrip() throws WriteException, JAXBException, IOException, PropertyVetoException
+	{
+		LegoList initial = LegoXMLUtils.readLegoList(new File(SimAPITest.class.getResource("badDay.xml").getFile()));
+		BDBDataStoreImpl.getInstance().importLegoList(initial);
 
-        //reread, just incase
-        initial = LegoXMLUtils.readLegoList(new File(SimAPITest.class.getResource("badDay.xml").getFile()));
-        LegoList readBack = BDBDataStoreImpl.getInstance().getLegoListByID(initial.getLegoListUUID());
-        
-        assertTrue(SchemaEquals.equals(initial, readBack));
-        
-        //Ok, now we have known content in the DB.  Lets try roundtripping it through the sim-api implementation.
-        
-        CloseableIterator<Lego> iter = BDBDataStoreImpl.getInstance().getLegos();
-        try
-        {
-            while (iter.hasNext())
-            {
-                Lego l = iter.next();
-                
-                for (Assertion a : l.getAssertion())
-                {
-                     Assertion converted = SimToSchemaConversions.convert(SchemaToSimConversions.convert(a));
-                     //TODO it is a known issue that there is currently no place to store the assertionComponents
-                     a.getAssertionComponent().clear();
-                     if (a.getTiming() != null)
-                     {
-                         //TODO known issue that timing doesn't support units at the moment.
-                         a.getTiming().setUnits(null);
-                     }
-                     assertTrue("Assertion from sim-api did not equal assertion prior to sim-api", SchemaEquals.equals(a, converted));
-                }
-            }
-        }
-        finally
-        {
-            iter.close();
-        }
-        
-    }
+		// reread, just incase
+		initial = LegoXMLUtils.readLegoList(new File(SimAPITest.class.getResource("badDay.xml").getFile()));
+		LegoList readBack = BDBDataStoreImpl.getInstance().getLegoListByID(initial.getLegoListUUID());
+
+		assertTrue(SchemaEquals.equals(initial, readBack));
+
+		// Ok, now we have known content in the DB. Lets try roundtripping it through the sim-api implementation.
+
+		CloseableIterator<Lego> iter = BDBDataStoreImpl.getInstance().getLegos();
+		try
+		{
+			while (iter.hasNext())
+			{
+				Lego l = iter.next();
+
+				for (Assertion a : l.getAssertion())
+				{
+					Assertion converted = SimToSchemaConversions.convert(SchemaToSimConversions.convert(a));
+					assertTrue("Assertion from sim-api did not equal assertion prior to sim-api", SchemaEquals.equals(a, converted));
+				}
+			}
+		}
+		finally
+		{
+			iter.close();
+		}
+
+	}
 }
