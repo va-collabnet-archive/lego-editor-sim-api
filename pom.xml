@@ -19,7 +19,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sim.version>1.0-SNAPSHOT</sim.version>
-		<lego-editor.version>1.0-SNAPSHOT</lego-editor.version>
+		<lego-editor.version>0.56-SNAPSHOT</lego-editor.version>
     </properties>
 
     <dependencies>

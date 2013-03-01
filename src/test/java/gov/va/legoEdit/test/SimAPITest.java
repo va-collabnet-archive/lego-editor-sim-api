@@ -4,15 +4,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import gov.va.legoEdit.formats.LegoXMLUtils;
 import gov.va.legoEdit.model.SchemaEquals;
-import gov.va.legoEdit.model.schemaModel.Assertion;
-import gov.va.legoEdit.model.schemaModel.Lego;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
 import gov.va.legoEdit.storage.CloseableIterator;
 import gov.va.legoEdit.storage.WriteException;
+import gov.va.legoEdit.storage.sim.util.ConceptVersion;
 import gov.va.legoEdit.storage.sim.util.SchemaToSimConversions;
 import gov.va.legoEdit.storage.sim.util.SimToSchemaConversions;
-import gov.va.legoEdit.storage.wb.WBDataStore;
+import gov.va.legoEdit.storage.wb.WBUtility;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class SimAPITest
 	{
 		BDBDataStoreImpl.dbFolderPath = new File("testDB");
 		FileUtils.deleteDirectory(BDBDataStoreImpl.dbFolderPath);
-		WBDataStore.bdbFolderPath = new File("../lego-editor/wb-berkeley-db");
+		WBUtility.snomedIdTypeNid = ConceptVersion.authorityNid;
 	}
 
 	@AfterClass
@@ -86,25 +85,20 @@ public class SimAPITest
 		assertTrue(SchemaEquals.equals(initial, readBack));
 
 		// Ok, now we have known content in the DB. Lets try roundtripping it through the sim-api implementation.
-
-		CloseableIterator<Lego> iter = BDBDataStoreImpl.getInstance().getLegos();
+		CloseableIterator<LegoList> iter = BDBDataStoreImpl.getInstance().getLegoLists();
 		try
 		{
 			while (iter.hasNext())
 			{
-				Lego l = iter.next();
+				LegoList ll = iter.next();
 
-				for (Assertion a : l.getAssertion())
-				{
-					Assertion converted = SimToSchemaConversions.convert(SchemaToSimConversions.convert(a));
-					assertTrue("Assertion from sim-api did not equal assertion prior to sim-api", SchemaEquals.equals(a, converted));
-				}
+				LegoList converted = SimToSchemaConversions.convert(SchemaToSimConversions.convert(ll));
+				assertTrue("LegoList from sim-api did not equal legoList prior to sim-api", SchemaEquals.equals(ll, converted));
 			}
 		}
 		finally
 		{
 			iter.close();
 		}
-
 	}
 }

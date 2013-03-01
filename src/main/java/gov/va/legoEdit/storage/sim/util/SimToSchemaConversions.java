@@ -9,8 +9,11 @@ import gov.va.legoEdit.model.schemaModel.Destination;
 import gov.va.legoEdit.model.schemaModel.Discernible;
 import gov.va.legoEdit.model.schemaModel.Expression;
 import gov.va.legoEdit.model.schemaModel.Interval;
+import gov.va.legoEdit.model.schemaModel.Lego;
+import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.model.schemaModel.Measurement;
 import gov.va.legoEdit.model.schemaModel.MeasurementConstant;
+import gov.va.legoEdit.model.schemaModel.Pncs;
 import gov.va.legoEdit.model.schemaModel.Point;
 import gov.va.legoEdit.model.schemaModel.PointDouble;
 import gov.va.legoEdit.model.schemaModel.PointLong;
@@ -18,10 +21,12 @@ import gov.va.legoEdit.model.schemaModel.PointMeasurementConstant;
 import gov.va.legoEdit.model.schemaModel.Qualifier;
 import gov.va.legoEdit.model.schemaModel.Relation;
 import gov.va.legoEdit.model.schemaModel.RelationGroup;
+import gov.va.legoEdit.model.schemaModel.Stamp;
 import gov.va.legoEdit.model.schemaModel.Type;
 import gov.va.legoEdit.model.schemaModel.Units;
 import gov.va.legoEdit.model.schemaModel.Value;
 import gov.va.legoEdit.storage.wb.WBUtility;
+import gov.va.legoEdit.util.TimeConvert;
 import gov.va.sim.act.AssertionBI;
 import gov.va.sim.act.AssertionRefBI;
 import gov.va.sim.act.expression.ExpressionBI;
@@ -32,6 +37,10 @@ import gov.va.sim.act.expression.node.ConjunctionNodeBI;
 import gov.va.sim.act.expression.node.ExpressionNodeBI;
 import gov.va.sim.act.expression.node.MeasurementNodeBI;
 import gov.va.sim.act.expression.node.TextNodeBI;
+import gov.va.sim.lego.LegoBI;
+import gov.va.sim.lego.LegoListBI;
+import gov.va.sim.lego.LegoStampBI;
+import gov.va.sim.lego.PncsBI;
 import gov.va.sim.measurement.BoundBI;
 import gov.va.sim.measurement.IntervalBI;
 import gov.va.sim.measurement.MeasurementBI;
@@ -57,7 +66,6 @@ public class SimToSchemaConversions
 	public static TreeMap<Long, MeasurementConstant> measurementConstantValues_ = new TreeMap<>();
 	static
 	{
-		// TODO this is a hack that needs addressing
 		for (MeasurementConstant mc : MeasurementConstant.values())
 		{
 			measurementConstantValues_.put((Long.MIN_VALUE + (long) mc.ordinal()), mc);
@@ -77,52 +85,13 @@ public class SimToSchemaConversions
 		return assertion;
 	}
 
-	// public static Measurement convert(long[] values)
-	// {
-	// if (values.length == 0)
-	// {
-	// return null;
-	// }
-	// Measurement m = new Measurement();
-	// //sim-api currently doesn't support units
-	// if (values.length == 1)
-	// {
-	// m.setPoint(makePoint(values[0]));
-	// }
-	// else if (values.length == 2)
-	// {
-	// Bound b = new Bound();
-	// b.setLowerPoint(makePoint(values[0]));
-	// b.setUpperPoint(makePoint(values[1]));
-	// m.setBound(b);
-	// }
-	// else if (values.length == 4)
-	// {
-	// Interval i = new Interval();
-	// Bound low = new Bound();
-	// low.setLowerPoint(makePoint(values[0]));
-	// low.setUpperPoint(makePoint(values[1]));
-	// i.setLowerBound(low);
-	// Bound high = new Bound();
-	// high.setLowerPoint(makePoint(values[2]));
-	// high.setUpperPoint(makePoint(values[3]));
-	// i.setUpperBound(high);
-	// m.setInterval(i);
-	// }
-	// else
-	// {
-	// throw new IllegalArgumentException("Illegal timing measurement");
-	// }
-	//
-	// return m;
-	// }
-
 	public static Point makePoint(Number number)
 	{
 		if (number == null)
 		{
 			return null;
 		}
+		// TODO constants
 		if (number.longValue() <= measurementConstantValues_.lastKey() && number.longValue() >= measurementConstantValues_.firstKey())
 		{
 			PointMeasurementConstant p = new PointMeasurementConstant();
@@ -423,5 +392,60 @@ public class SimToSchemaConversions
 		ac.setAssertionUUID(assertionComponent.getAssertionInstanceUuid().toString());
 		ac.setType(convertToType(assertionComponent.getType()));
 		return ac;
+	}
+	
+	public static Pncs convert(PncsBI pncs)
+	{
+		Pncs legoPncs = new Pncs();
+		legoPncs.setId(pncs.getId());
+		legoPncs.setName(pncs.getName());
+		legoPncs.setValue(pncs.getValue());
+		return legoPncs;
+	}
+	
+	public static Stamp convert(LegoStampBI stamp)
+	{
+		Stamp legoStamp = new Stamp();
+		legoStamp.setAuthor(stamp.getAuthor());
+		legoStamp.setModule(stamp.getModule());
+		legoStamp.setPath(stamp.getPath());
+		legoStamp.setStatus(stamp.getStatus());
+		legoStamp.setTime(TimeConvert.convert(stamp.getTime()));
+		legoStamp.setUuid(stamp.getInstanceUuid().toString());
+		return legoStamp;
+	}
+	
+	public static LegoList convert(LegoListBI legoList) throws IOException
+	{
+		LegoList ll = new LegoList();
+		ll.setComment(legoList.getComment());
+		ll.setGroupDescription(legoList.getGroupDescription());
+		ll.setGroupName(legoList.getGroupName());
+		ll.setLegoListUUID(legoList.getInstanceUuid().toString());
+		
+		ArrayList<Lego> legos = new ArrayList<>(legoList.getLego().size());
+		for (LegoBI lbi : legoList.getLego())
+		{
+			legos.add(convert(lbi));
+		}
+		ll.getLego().addAll(legos);
+		return ll;
+	}
+	
+	public static Lego convert(LegoBI lego) throws IOException
+	{
+		Lego l = new Lego();
+		l.setComment(lego.getComment());
+		l.setLegoUUID(lego.getInstanceUuid().toString());
+		l.setPncs(convert(lego.getPncs()));
+		l.setStamp(convert(lego.getStamp()));
+		
+		ArrayList<Assertion> assertions = new ArrayList<>(lego.getAssertions().size());
+		for (AssertionBI abi : lego.getAssertions())
+		{
+			assertions.add(convert(abi));
+		}
+		l.getAssertion().addAll(assertions);
+		return l;
 	}
 }

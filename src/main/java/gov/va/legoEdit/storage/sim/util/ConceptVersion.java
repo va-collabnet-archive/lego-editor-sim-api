@@ -45,9 +45,11 @@ import org.ihtsdo.tk.api.relationship.group.RelGroupVersionBI;
  * 
  * @author darmbrust
  */
+
 @SuppressWarnings("rawtypes")
 public class ConceptVersion implements ConceptVersionBI
 {
+	public static int authorityNid = -2147483623;
 	Concept concept_;
 
 	public ConceptVersion(Concept concept)
@@ -210,7 +212,7 @@ public class ConceptVersion implements ConceptVersionBI
 			@Override
 			public int getAuthorityNid()
 			{
-				return -2147483623;
+				return authorityNid;
 			}
 			
 			@Override
