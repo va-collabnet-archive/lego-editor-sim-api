@@ -9,69 +9,77 @@ import org.ihtsdo.tk.api.description.DescriptionVersionBI;
 
 /**
  * Lego Implementation of the SIM-API
+ * 
  * @author darmbrust
  */
 public class ConceptNode extends ExpressionNode<ConceptVersionBI> implements ConceptNodeBI
 {
-    public ConceptNode(ConceptVersionBI concept)
-    {
-        value_ = concept;
-    }
+	public ConceptNode(ConceptVersionBI concept)
+	{
+		value_ = concept;
+	}
 
-    @Override
-    public UUID getConceptUuid()
-    {
-        return (value_ == null ? null : value_.getPrimUuid());
-    }
+	@Override
+	public UUID getConceptUuid()
+	{
+		return (value_ == null ? null : value_.getPrimUuid());
+	}
 
-    @Override
-    public String getPreferredDesc() throws IOException
-    {
-        if (value_ == null)
-        {
-            return null;
-        }
+	@Override
+	public String getPreferredDesc() throws IOException
+	{
+		if (value_ == null)
+		{
+			return null;
+		}
 
-        @SuppressWarnings("rawtypes")
-        Collection<? extends DescriptionVersionBI> desc = value_.getPrefDescsActive();
-        if (desc != null && desc.size() > 0)
-        {
-            return desc.iterator().next().getText();
-        }
-        else
-        {
-            return "MISSING PREFERRED DESCRIPTION: (" + value_.toLongString() + ")";
-        }
-    }
+		@SuppressWarnings("rawtypes") 
+		Collection<? extends DescriptionVersionBI> desc = value_.getPrefDescsActive();
+		if (desc != null && desc.size() > 0)
+		{
+			return desc.iterator().next().getText();
+		}
+		else
+		{
+			return "MISSING PREFERRED DESCRIPTION: (" + value_.toLongString() + ")";
+		}
+	}
 
-    @Override
-    public String getFullySpecifiedDesc() throws IOException
-    {
-        if (value_ == null)
-        {
-            return null;
-        }
-        @SuppressWarnings("rawtypes")
-        Collection<? extends DescriptionVersionBI> desc = value_.getFsnDescsActive();
-        if (desc != null && desc.size() > 0)
-        {
-            return desc.iterator().next().getText();
-        }
-        else
-        {
-            return "MISSING FSN: (" + value_.toLongString() + ")";
-        }
-    }
+	@Override
+	public String getFullySpecifiedDesc() throws IOException
+	{
+		if (value_ == null)
+		{
+			return null;
+		}
+		@SuppressWarnings("rawtypes")
+		Collection<? extends DescriptionVersionBI> desc = value_.getFsnDescsActive();
+		if (desc != null && desc.size() > 0)
+		{
+			return desc.iterator().next().getText();
+		}
+		else
+		{
+			return "MISSING FSN: (" + value_.toLongString() + ")";
+		}
+	}
 
-    @Override
-    public String getFullySpecifiedText() throws IOException
-    {
-        return getFullySpecifiedDesc();
-    }
+	@Override
+	public String getFullySpecifiedText() throws IOException
+	{
+		return getFullySpecifiedDesc();
+	}
 
-    @Override
-    public String getPreferredText() throws IOException
-    {
-        return getPreferredDesc();
-    }
+	@Override
+	public String getPreferredText() throws IOException
+	{
+		return getPreferredDesc();
+	}
+
+	public void appendStringForUuidHash(StringBuilder sb) throws IOException
+	{
+		sb.append(":");
+		sb.append(value_ == null ? null : (value_.getPrimUuid() == null ? null : value_.getPrimUuid().toString()));
+		super.appendStringForUuidHash(sb);  //get the rels
+	}
 }
