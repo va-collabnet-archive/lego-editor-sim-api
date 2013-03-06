@@ -1,5 +1,6 @@
 package gov.va.legoEdit.storage.sim.util;
 
+import gov.va.legoEdit.model.schemaModel.MeasurementConstant;
 import gov.va.legoEdit.model.schemaModel.PointDouble;
 import gov.va.legoEdit.model.schemaModel.PointLong;
 import gov.va.legoEdit.model.schemaModel.PointMeasurementConstant;
@@ -21,6 +22,7 @@ import gov.va.legoEdit.model.sim.lego.LegoStamp;
 import gov.va.legoEdit.model.sim.lego.Pncs;
 import gov.va.legoEdit.model.sim.measurement.Bound;
 import gov.va.legoEdit.model.sim.measurement.Interval;
+import gov.va.legoEdit.model.sim.measurement.Placeholder;
 import gov.va.legoEdit.model.sim.measurement.Point;
 import gov.va.legoEdit.storage.DataStoreException;
 import gov.va.legoEdit.storage.wb.WBUtility;
@@ -40,9 +42,11 @@ import gov.va.sim.measurement.BoundBI;
 import gov.va.sim.measurement.IntervalBI;
 import gov.va.sim.measurement.MeasurementBI;
 import gov.va.sim.measurement.PointBI;
+import gov.va.sim.measurement.PlaceholderBI.PlaceholderConstant;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.UUID;
 import org.ihtsdo.tk.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -56,6 +60,14 @@ import org.slf4j.LoggerFactory;
 public class SchemaToSimConversions
 {
 	private static Logger logger = LoggerFactory.getLogger(SchemaToSimConversions.class);
+	public static HashMap<MeasurementConstant, PlaceholderConstant> measurementConstantValues_ = new HashMap<>();
+	static
+	{
+		measurementConstantValues_.put(MeasurementConstant.DOB, PlaceholderConstant.DOB);
+		measurementConstantValues_.put(MeasurementConstant.NOW, PlaceholderConstant.NOW);
+		measurementConstantValues_.put(MeasurementConstant.END_ACTIVE_SERVICE, PlaceholderConstant.END_ACTIVE_SERVICE);
+		measurementConstantValues_.put(MeasurementConstant.START_ACTIVE_SERVICE, PlaceholderConstant.START_ACTIVE_SERVICE);
+	}
 
 	public static Assertion convert(gov.va.legoEdit.model.schemaModel.Assertion schemaAssertion) throws PropertyVetoException
 	{
@@ -75,6 +87,10 @@ public class SchemaToSimConversions
 
 	public static ExpressionNodeBI<?> convertToNode(gov.va.legoEdit.model.schemaModel.Expression schemaExpression) throws PropertyVetoException
 	{
+		if (schemaExpression == null)
+		{
+			throw new IllegalArgumentException("missing concept");
+		}
 		ExpressionNodeBI<?> node;
 		if (schemaExpression.getConcept() != null)
 		{
@@ -258,8 +274,7 @@ public class SchemaToSimConversions
 		}
 		else if (schemaPoint instanceof PointMeasurementConstant)
 		{
-			// TODO constants
-			return new Point(Long.MIN_VALUE + (long) ((PointMeasurementConstant) schemaPoint).getValue().ordinal(), cv);
+			return new Placeholder(measurementConstantValues_.get(((PointMeasurementConstant)schemaPoint).getValue()), cv);
 		}
 		else
 		{

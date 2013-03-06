@@ -44,6 +44,8 @@ import gov.va.sim.lego.PncsBI;
 import gov.va.sim.measurement.BoundBI;
 import gov.va.sim.measurement.IntervalBI;
 import gov.va.sim.measurement.MeasurementBI;
+import gov.va.sim.measurement.PlaceholderBI;
+import gov.va.sim.measurement.PlaceholderBI.PlaceholderConstant;
 import gov.va.sim.measurement.PointBI;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +53,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import org.ihtsdo.tk.api.concept.ConceptVersionBI;
 
 /**
@@ -63,13 +64,13 @@ import org.ihtsdo.tk.api.concept.ConceptVersionBI;
 
 public class SimToSchemaConversions
 {
-	public static TreeMap<Long, MeasurementConstant> measurementConstantValues_ = new TreeMap<>();
+	public static HashMap<PlaceholderConstant, MeasurementConstant> measurementConstantValues_ = new HashMap<>();
 	static
 	{
-		for (MeasurementConstant mc : MeasurementConstant.values())
-		{
-			measurementConstantValues_.put((Long.MIN_VALUE + (long) mc.ordinal()), mc);
-		}
+		measurementConstantValues_.put(PlaceholderConstant.DOB, MeasurementConstant.DOB);
+		measurementConstantValues_.put(PlaceholderConstant.NOW, MeasurementConstant.NOW);
+		measurementConstantValues_.put(PlaceholderConstant.END_ACTIVE_SERVICE, MeasurementConstant.END_ACTIVE_SERVICE);
+		measurementConstantValues_.put(PlaceholderConstant.START_ACTIVE_SERVICE, MeasurementConstant.START_ACTIVE_SERVICE);
 	}
 
 	public static Assertion convert(AssertionBI simAssertion) throws IOException
@@ -85,33 +86,29 @@ public class SimToSchemaConversions
 		return assertion;
 	}
 
-	public static Point makePoint(Number number)
+	public static Point makePoint(PointBI point)
 	{
-		if (number == null)
+		if (point == null || point.getPointValue() == null)
 		{
 			return null;
 		}
-		// TODO constants
-		if (number.longValue() <= measurementConstantValues_.lastKey() && number.longValue() >= measurementConstantValues_.firstKey())
+		
+		if (point instanceof PlaceholderBI)
 		{
 			PointMeasurementConstant p = new PointMeasurementConstant();
-			p.setValue(measurementConstantValues_.get(number.longValue()));
-			if (p.getValue() == null)
-			{
-				throw new IllegalArgumentException("Unknown measurement constant");
-			}
+			p.setValue(measurementConstantValues_.get(((PlaceholderBI)point).getPlaceholder()));
 			return p;
 		}
-		else if (number instanceof Double || number instanceof Float)
+		else if (point.getPointValue() instanceof Double || point.getPointValue() instanceof Float)
 		{
 			PointDouble p = new PointDouble();
-			p.setValue(number.doubleValue());
+			p.setValue(point.getPointValue().doubleValue());
 			return p;
 		}
 		else
 		{
 			PointLong p = new PointLong();
-			p.setValue(number.longValue());
+			p.setValue(point.getPointValue().longValue());
 			return p;
 		}
 	}
@@ -298,15 +295,15 @@ public class SimToSchemaConversions
 		if (measurement instanceof PointBI)
 		{
 			PointBI simPoint = (PointBI) measurement;
-			m.setPoint(makePoint(simPoint.getPointValue()));
+			m.setPoint(makePoint(simPoint));
 			m.setUnits(convertToUnits(simPoint.getUnitsOfMeasure()));
 		}
 		else if (measurement instanceof BoundBI)
 		{
 			BoundBI simBound = (BoundBI) measurement;
 			Bound b = new Bound();
-			b.setLowerPoint(makePoint(simBound.getLowerLimit().getPointValue()));
-			b.setUpperPoint(makePoint(simBound.getUpperLimit().getPointValue()));
+			b.setLowerPoint(makePoint(simBound.getLowerLimit()));
+			b.setUpperPoint(makePoint(simBound.getUpperLimit()));
 			Units u1 = convertToUnits(simBound.getLowerLimit().getUnitsOfMeasure());
 			Units u2 = convertToUnits(simBound.getUpperLimit().getUnitsOfMeasure());
 			if (!SchemaEquals.equals(u1, u2))
@@ -322,8 +319,8 @@ public class SimToSchemaConversions
 			Interval i = new Interval();
 
 			Bound low = new Bound();
-			low.setLowerPoint(makePoint(simInterval.getLowerBound().getLowerLimit().getPointValue()));
-			low.setUpperPoint(makePoint(simInterval.getLowerBound().getUpperLimit().getPointValue()));
+			low.setLowerPoint(makePoint(simInterval.getLowerBound().getLowerLimit()));
+			low.setUpperPoint(makePoint(simInterval.getLowerBound().getUpperLimit()));
 			Units u1 = convertToUnits(simInterval.getLowerBound().getLowerLimit().getUnitsOfMeasure());
 			Units u2 = convertToUnits(simInterval.getLowerBound().getUpperLimit().getUnitsOfMeasure());
 			if (!SchemaEquals.equals(u1, u2))
@@ -332,8 +329,8 @@ public class SimToSchemaConversions
 			}
 
 			Bound high = new Bound();
-			high.setLowerPoint(makePoint(simInterval.getUpperBound().getLowerLimit().getPointValue()));
-			high.setUpperPoint(makePoint(simInterval.getUpperBound().getUpperLimit().getPointValue()));
+			high.setLowerPoint(makePoint(simInterval.getUpperBound().getLowerLimit()));
+			high.setUpperPoint(makePoint(simInterval.getUpperBound().getUpperLimit()));
 			Units u3 = convertToUnits(simInterval.getUpperBound().getLowerLimit().getUnitsOfMeasure());
 			Units u4 = convertToUnits(simInterval.getUpperBound().getUpperLimit().getUnitsOfMeasure());
 			if (!SchemaEquals.equals(u3, u4))
