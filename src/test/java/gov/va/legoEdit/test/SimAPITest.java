@@ -75,11 +75,11 @@ public class SimAPITest
 	@Test
 	public void testSimRoundtrip() throws WriteException, JAXBException, IOException, PropertyVetoException
 	{
-		LegoList initial = LegoXMLUtils.readLegoList(new File(SimAPITest.class.getResource("badDay.xml").getFile()));
+		LegoList initial = LegoXMLUtils.readLegoList(SimAPITest.class.getResourceAsStream("badDay.xml"));
 		BDBDataStoreImpl.getInstance().importLegoList(initial);
 
 		// reread, just incase
-		initial = LegoXMLUtils.readLegoList(new File(SimAPITest.class.getResource("badDay.xml").getFile()));
+		initial = LegoXMLUtils.readLegoList(SimAPITest.class.getResourceAsStream("badDay.xml"));
 		LegoList readBack = BDBDataStoreImpl.getInstance().getLegoListByID(initial.getLegoListUUID());
 
 		assertTrue(SchemaEquals.equals(initial, readBack));
