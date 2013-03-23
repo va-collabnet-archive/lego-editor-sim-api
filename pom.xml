@@ -3,16 +3,16 @@
 
 	<groupId>gov.va</groupId>
 	<artifactId>lego-editor-sim-api</artifactId>
-	<version>1.1</version>
+	<version>1.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Lego Editor SIM API Interfaces</name>
 	<url>http://maven.apache.org</url>
 
 	<scm>
-		<connection>scm:svn:https://csfe.aceworkspace.net/svn/repos/lego-editor/tags/lego-editor-sim-api/lego-editor-sim-api-1.1</connection>
-		<developerConnection>scm:svn:https://csfe.aceworkspace.net/svn/repos/lego-editor/tags/lego-editor-sim-api/lego-editor-sim-api-1.1</developerConnection>
-		<url>https://csfe.aceworkspace.net/integration/viewvc/viewvc.cgi/tags/lego-editor-sim-api/lego-editor-sim-api-1.1?root=lego-editor&amp;system=exsy1002</url>
+		<connection>scm:svn:https://csfe.aceworkspace.net/svn/repos/lego-editor/trunk/lego-editor-sim-api</connection>
+		<developerConnection>scm:svn:https://csfe.aceworkspace.net/svn/repos/lego-editor/trunk/lego-editor-sim-api</developerConnection>
+		<url>https://csfe.aceworkspace.net/integration/viewvc/viewvc.cgi/trunk/lego-editor-sim-api/?root=lego-editor&amp;system=exsy1002</url>
 	</scm>
 
 	<properties>
