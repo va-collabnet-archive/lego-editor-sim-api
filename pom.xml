@@ -17,8 +17,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<sim.version>1.0</sim.version>
-		<lego-editor.version>1.0</lego-editor.version>
+		<sim.version>1.1</sim.version>
+		<lego-editor.version>1.2</lego-editor.version>
 		<maven-release-plugin.version>2.0</maven-release-plugin.version>
 	</properties>
 

@@ -67,6 +67,7 @@ public class SchemaToSimConversions
 		measurementConstantValues_.put(MeasurementConstant.NOW, PlaceholderConstant.NOW);
 		measurementConstantValues_.put(MeasurementConstant.END_ACTIVE_SERVICE, PlaceholderConstant.END_ACTIVE_SERVICE);
 		measurementConstantValues_.put(MeasurementConstant.START_ACTIVE_SERVICE, PlaceholderConstant.START_ACTIVE_SERVICE);
+		measurementConstantValues_.put(MeasurementConstant.PNCS_VALUE_FIELD, PlaceholderConstant.PNCS_VALUE_FIELD);
 	}
 
 	public static Assertion convert(gov.va.legoEdit.model.schemaModel.Assertion schemaAssertion) throws PropertyVetoException

@@ -71,6 +71,7 @@ public class SimToSchemaConversions
 		measurementConstantValues_.put(PlaceholderConstant.NOW, MeasurementConstant.NOW);
 		measurementConstantValues_.put(PlaceholderConstant.END_ACTIVE_SERVICE, MeasurementConstant.END_ACTIVE_SERVICE);
 		measurementConstantValues_.put(PlaceholderConstant.START_ACTIVE_SERVICE, MeasurementConstant.START_ACTIVE_SERVICE);
+		measurementConstantValues_.put(PlaceholderConstant.PNCS_VALUE_FIELD, MeasurementConstant.PNCS_VALUE_FIELD);
 	}
 
 	public static Assertion convert(AssertionBI simAssertion) throws IOException
